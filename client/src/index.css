@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222 80% 50%; /* Medium Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.9 76.0% 51.4%; /* Lighter Blue */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 47.9 95.8% 53.1%; /* Accent Yellow */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    /* Chart colors for reporting */
+    --chart-1: 222 80% 50%;
+    --chart-2: 217.9 76.0% 51.4%;
+    --chart-3: 47.9 95.8% 53.1%;
+    --chart-4: 142.1 76.2% 36.3%;
+    --chart-5: 346.8 77.2% 49.8%;
+
+    /* Sidebar background */
+    --sidebar: 222 47.4% 11.2%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-muted: 217.9 32.6% 17.5%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 222 80% 50%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold;
+  }
+  p {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+  blockquote {
+    @apply font-quote italic;
+  }
+  .container {
+    @apply max-w-[1200px] mx-auto px-4;
+  }
+  /* Custom utility classes */
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold text-center text-primary mb-8;
+  }
+  .bible-quote {
+    @apply font-quote italic text-lg md:text-xl leading-relaxed;
+  }
+  /* Form styles */
+  .form-group {
+    @apply mb-4;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  .form-input {
+    @apply w-full px-4 py-2 border border-neutral-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  /* Calendar styles */
+  .calendar-day {
+    @apply border p-1 align-top h-24 md:h-32 relative;
+  }
+  .calendar-day-head {
+    @apply py-2 px-4 border-b text-center;
+  }
+  .calendar-event {
+    @apply text-xs p-1 rounded mt-1 overflow-hidden text-ellipsis;
+  }
+  /* Button variations */
+  .btn-primary {
+    @apply bg-primary hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md transition;
+  }
+  .btn-secondary {
+    @apply bg-white border border-primary text-primary hover:bg-gray-50 font-semibold px-4 py-2 rounded-md transition;
+  }
+  .btn-accent {
+    @apply bg-accent text-neutral-text hover:bg-yellow-500 font-semibold px-4 py-2 rounded-md transition;
+  }
+  .btn-sm {
+    @apply px-3 py-1 text-sm;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-lg;
+  }
+  .btn-icon {
+    @apply inline-flex items-center;
+  }
+  /* Card variations */
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+  }
+  .card-header {
+    @apply p-4 bg-primary text-white;
+  }
+  .card-body {
+    @apply p-4;
+  }
+  /* Forum styles */
+  .forum-topic {
+    @apply border-b border-gray-200 py-4;
+  }
+  .forum-topic-title {
+    @apply font-bold text-lg text-primary hover:text-blue-700 transition;
+  }
+  .forum-meta {
+    @apply text-xs text-gray-500 mt-1 flex items-center gap-3;
+  }
+  /* General utilities */
+  .icon-text {
+    @apply flex items-center;
+  }
+  .icon-text .icon {
+    @apply mr-2;
+  }
+}
+
+.font-heading {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-body {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.font-quote {
+  font-family: 'Lora', serif;
+}
