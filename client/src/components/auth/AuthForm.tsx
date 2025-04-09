@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +38,9 @@ const registerSchema = z.object({
 
 const AuthForm = () => {
   const [tab, setTab] = useState<"login" | "register">("login");
-  const [location] = useLocation();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [isRecovering, setIsRecovering] = useState(false);
 
   // Parse the redirect parameter from the URL manually
   const getRedirectUrl = () => {
@@ -90,6 +93,16 @@ const AuthForm = () => {
     });
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsRecovering(true);
+    // Implementar lógica de recuperação de senha aqui
+    setTimeout(() => {
+      setIsRecovering(false);
+      setShowForgotPassword(false);
+    }, 2000);
+  };
+
   return (
     <Card className="w-full max-w-md">
       <Tabs value={tab} onValueChange={(value) => setTab(value as "login" | "register")}>
@@ -124,48 +137,12 @@ const AuthForm = () => {
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Senha</Label>
                     <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Esqueceu a senha?
-                  </button>
-
-                  {/* Modal de Recuperação de Senha */}
-                  {showForgotPassword && (
-                    <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Recuperar Senha</DialogTitle>
-                          <DialogDescription>
-                            Digite seu email para receber instruções de recuperação de senha.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleForgotPassword} className="space-y-4">
-                          <div>
-                            <Label htmlFor="recovery-email">Email</Label>
-                            <Input
-                              id="recovery-email"
-                              type="email"
-                              value={recoveryEmail}
-                              onChange={(e) => setRecoveryEmail(e.target.value)}
-                              placeholder="seu@email.com"
-                            />
-                          </div>
-                          <Button type="submit" className="w-full" disabled={isRecovering}>
-                            {isRecovering ? (
-                              <>
-                                <span className="material-icons animate-spin mr-2">autorenew</span>
-                                Enviando...
-                              </>
-                            ) : (
-                              "Enviar Instruções"
-                            )}
-                          </Button>
-                        </form>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Esqueceu a senha?
+                    </button>
                   </div>
                   <Input
                     id="password"
@@ -307,6 +284,40 @@ const AuthForm = () => {
           </CardFooter>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Recuperação de Senha */}
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recuperar Senha</DialogTitle>
+            <DialogDescription>
+              Digite seu email para receber instruções de recuperação de senha.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <div>
+              <Label htmlFor="recovery-email">Email</Label>
+              <Input
+                id="recovery-email"
+                type="email"
+                value={recoveryEmail}
+                onChange={(e) => setRecoveryEmail(e.target.value)}
+                placeholder="seu@email.com"
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isRecovering}>
+              {isRecovering ? (
+                <>
+                  <span className="material-icons animate-spin mr-2">autorenew</span>
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Instruções"
+              )}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
