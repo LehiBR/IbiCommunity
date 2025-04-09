@@ -1,4 +1,17 @@
 import { Link } from 'wouter';
+import { 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Clock, 
+  Facebook, 
+  Instagram, 
+  Youtube, 
+  Headphones,
+  Church
+} from 'lucide-react';
+import logoImage from '@/assets/logo.jpg';
+import { motion } from 'framer-motion';
 
 const Footer = () => {
   return (
@@ -7,27 +20,58 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
-              <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white mr-3">
-                <span className="material-icons">church</span>
-              </div>
+              <motion.div 
+                className="h-12 w-12 rounded-full overflow-hidden mr-3 bg-white p-1"
+                whileHover={{ rotate: 10, scale: 1.05 }}
+              >
+                <img 
+                  src={logoImage} 
+                  alt="IBI Parnaíba Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
               <h2 className="text-xl font-bold">IBI Parnaíba</h2>
             </div>
             <p className="text-gray-300 mb-4">
               Igreja Batista Independente de Parnaíba, compartilhando o amor de Cristo desde 1985.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-white transition" aria-label="Facebook">
-                <span className="material-icons">facebook</span>
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition" aria-label="Instagram">
-                <span className="material-icons">photo_camera</span>
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition" aria-label="Youtube">
-                <span className="material-icons">video_library</span>
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition" aria-label="Podcast">
-                <span className="material-icons">headphones</span>
-              </a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition" 
+                aria-label="Facebook"
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Facebook size={20} />
+              </motion.a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition" 
+                aria-label="Instagram"
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Instagram size={20} />
+              </motion.a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition" 
+                aria-label="Youtube"
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Youtube size={20} />
+              </motion.a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition" 
+                aria-label="Podcast"
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Headphones size={20} />
+              </motion.a>
             </div>
           </div>
           
@@ -112,19 +156,19 @@ const Footer = () => {
             <h3 className="text-lg font-bold mb-4">Contato</h3>
             <ul className="space-y-2">
               <li className="flex items-center">
-                <span className="material-icons mr-2 text-gray-300">location_on</span>
+                <MapPin className="mr-2 text-gray-300" size={18} />
                 <span className="text-gray-300">Rua das Palmeiras, 123, Centro, Parnaíba - PI</span>
               </li>
               <li className="flex items-center">
-                <span className="material-icons mr-2 text-gray-300">phone</span>
+                <Phone className="mr-2 text-gray-300" size={18} />
                 <span className="text-gray-300">(86) 3322-1234</span>
               </li>
               <li className="flex items-center">
-                <span className="material-icons mr-2 text-gray-300">email</span>
+                <Mail className="mr-2 text-gray-300" size={18} />
                 <span className="text-gray-300">contato@ibiparnaiba.org</span>
               </li>
               <li className="flex items-center">
-                <span className="material-icons mr-2 text-gray-300">schedule</span>
+                <Clock className="mr-2 text-gray-300" size={18} />
                 <span className="text-gray-300">Cultos: Dom 9h e 18h | Qua 19h</span>
               </li>
             </ul>
