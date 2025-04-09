@@ -5,6 +5,12 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { requireAuth, requireAdmin } from './auth';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Obter caminho atual para substituir __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configure storage
 const storage = multer.diskStorage({
