@@ -339,19 +339,43 @@ export function setupAuth(app: Express): void {
       });
 
       // Enviar email usando o nodemailer
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      let transporter;
+      
+      // Verifica se é ambiente de produção ou teste
+      if (process.env.NODE_ENV === 'production') {
+        // Configuração para produção (Gmail ou outro serviço)
+        transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST || "smtp.gmail.com",
+          port: parseInt(process.env.SMTP_PORT || "587"),
+          secure: process.env.SMTP_SECURE === "true",
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
+      } else {
+        // Para ambiente de desenvolvimento, usamos Ethereal (contas de teste)
+        // Cria uma conta de teste do Ethereal
+        const testAccount = await nodemailer.createTestAccount();
+        
+        // Cria um transportador do Ethereal
+        transporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false, // true para 465, false para outras portas
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+        
+        console.log('Criada conta de teste para emails: ', testAccount.user);
+      }
 
       const resetUrl = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
 
-      await transporter.sendMail({
+      // Enviar o email
+      const mailOptions = {
         from: process.env.SMTP_FROM || '"Igreja Batista" <noreply@igreja.com>',
         to: email,
         subject: "Recuperação de Senha",
@@ -362,7 +386,15 @@ export function setupAuth(app: Express): void {
           <p>Se você não solicitou esta recuperação, ignore este email.</p>
           <p>O link expira em 1 hora.</p>
         `,
-      });
+      };
+      
+      // Envia o email
+      const info = await transporter.sendMail(mailOptions);
+      
+      // Se estiver no modo de desenvolvimento com Ethereal, mostra a URL de visualização
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('URL para visualizar o email: %s', nodemailer.getTestMessageUrl(info));
+      }
 
       res.json({ 
         message: "Instruções de recuperação de senha foram enviadas para seu email"

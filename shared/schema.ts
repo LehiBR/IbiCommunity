@@ -23,6 +23,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   role: true,
   avatar: true,
+  resetToken: true,
+  resetTokenExpiry: true,
   createdAt: true,
 });
 

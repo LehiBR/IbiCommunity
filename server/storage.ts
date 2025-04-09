@@ -82,7 +82,7 @@ export interface IStorage {
   deleteBibleStudyResource(id: number): Promise<boolean>;
   
   // Session store
-  sessionStore: any;
+  sessionStore: any; // Session store for Express sessions
 }
 
 // Memory storage implementation
@@ -107,7 +107,7 @@ export class MemStorage implements IStorage {
   private photoAlbumIdCounter: number;
   private bibleStudyResourceIdCounter: number;
   
-  public sessionStore: session.SessionStore;
+  public sessionStore: any; // Sessionstore type
   
   constructor() {
     this.users = new Map();
@@ -169,6 +169,8 @@ export class MemStorage implements IStorage {
       ...userData,
       role: "member",
       avatar: null,
+      resetToken: null,
+      resetTokenExpiry: null,
       createdAt: new Date()
     };
     this.users.set(id, user);
