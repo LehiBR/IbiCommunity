@@ -152,6 +152,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         errorMessage = "Nome de usuário é obrigatório.";
       } else if (errorMessage.includes("invalid_type") && errorMessage.includes("email")) {
         errorMessage = "Email inválido.";
+      } else if (errorMessage.includes("Nome de usuário já está em uso")) {
+        errorMessage = "Este nome de usuário já está sendo usado. Por favor, escolha outro.";
+      } else if (errorMessage.includes("Email já está em uso")) {
+        errorMessage = "Este email já está cadastrado. Tente fazer login ou recuperar sua senha.";
       }
       
       toast({
