@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postData = insertPostSchema.parse(req.body);
       const post = await storage.createPost({
         ...postData,
-        authorId: req.user.id
+        authorId: req.user!.id
       });
       
       res.status(201).json(post);
@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const eventData = insertEventSchema.parse(req.body);
       const event = await storage.createEvent({
         ...eventData,
-        creatorId: req.user.id
+        creatorId: req.user!.id
       });
       
       res.status(201).json(event);

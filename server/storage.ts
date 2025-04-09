@@ -81,7 +81,7 @@ export interface IStorage {
   deleteBibleStudyResource(id: number): Promise<boolean>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 }
 
 // Memory storage implementation

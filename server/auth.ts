@@ -10,7 +10,15 @@ import { z } from "zod";
 // Augment the Express Request type to include user property
 declare global {
   namespace Express {
-    interface User extends Omit<User, "password"> {}
+    interface User {
+      id: number;
+      username: string;
+      email: string;
+      name: string;
+      role: string;
+      avatar: string | null;
+      createdAt: Date;
+    }
   }
 }
 
