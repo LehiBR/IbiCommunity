@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +38,7 @@ const registerSchema = z.object({
 const AuthForm = () => {
   const [tab, setTab] = useState<"login" | "register">("login");
   const [location] = useLocation();
-  
+
   // Parse the redirect parameter from the URL manually
   const getRedirectUrl = () => {
     try {
@@ -49,7 +48,7 @@ const AuthForm = () => {
       return "/dashboard";
     }
   };
-  
+
   const redirectTo = getRedirectUrl();
   const { loginMutation, registerMutation } = useAuth();
 
@@ -98,7 +97,7 @@ const AuthForm = () => {
           <TabsTrigger value="login">Entrar</TabsTrigger>
           <TabsTrigger value="register">Cadastrar</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="login">
           <CardHeader>
             <CardTitle>Área do Membro</CardTitle>
@@ -209,7 +208,7 @@ const AuthForm = () => {
             </Button>
           </CardFooter>
         </TabsContent>
-        
+
         <TabsContent value="register">
           <CardHeader>
             <CardTitle>Criar uma conta</CardTitle>
