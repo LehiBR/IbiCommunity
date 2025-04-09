@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import { useAuth } from "@/hooks/use-auth";
+import { Clock } from "lucide-react";
 import type { Post, Event, ForumPost } from "@shared/schema";
 
 const Dashboard = () => {
@@ -180,7 +181,7 @@ const Dashboard = () => {
                         <div>
                           <h4 className="font-medium text-gray-800">{event.title}</h4>
                           <p className="text-xs text-gray-500 flex items-center">
-                            <span className="material-icons text-xs mr-1">schedule</span>
+                            <Clock className="w-3 h-3 mr-1" />
                             {new Date(event.startDate).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>

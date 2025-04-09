@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { FiCalendar, FiInfo } from "react-icons/fi";
+import pombaImage from '@/assets/church/pomba.jpg';
 
 const Hero = () => {
   return (
@@ -45,9 +46,9 @@ const Hero = () => {
         />
       </div>
       
-      <div className="relative container mx-auto px-4 py-16 md:py-24">
+      <div className="relative container mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center">
         <motion.div 
-          className="max-w-3xl"
+          className="max-w-3xl md:flex-1"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -95,6 +96,33 @@ const Hero = () => {
               </motion.div>
             </Link>
           </motion.div>
+        </motion.div>
+
+        <motion.div
+          className="hidden md:block md:flex-1 mt-8 md:mt-0 relative"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        >
+          <div className="relative h-56 w-56 xl:h-72 xl:w-72 mx-auto">
+            <motion.div
+              className="absolute inset-0 rounded-full bg-white/10"
+              animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            ></motion.div>
+            <motion.div
+              className="absolute inset-0 rounded-full overflow-hidden"
+              initial={{ rotateY: 0 }}
+              animate={{ rotateY: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            >
+              <img 
+                src={pombaImage}
+                alt="Espírito Santo" 
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </section>

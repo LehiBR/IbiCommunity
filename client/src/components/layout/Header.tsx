@@ -235,7 +235,7 @@ const Header = () => {
                     <Link href="/admin">
                       <Button variant="secondary" size="sm" className="flex items-center bg-amber-500 hover:bg-amber-600 text-white">
                         <FiSettings className="mr-1" />
-                        Admin
+                        Administração
                       </Button>
                     </Link>
                   </motion.div>

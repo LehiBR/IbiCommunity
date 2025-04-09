@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import AuthForm from "@/components/auth/AuthForm";
 import { useAuth } from "@/hooks/use-auth";
+import { MessageCircle, BookOpen, Calendar, Church } from "lucide-react";
 
 const AuthPage = () => {
   const [, setLocation] = useLocation();
@@ -39,7 +40,7 @@ const AuthPage = () => {
         <div className="h-full flex flex-col justify-center max-w-md mx-auto">
           <div className="mb-8">
             <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center text-primary mb-4">
-              <span className="material-icons text-3xl">church</span>
+              <Church size={32} />
             </div>
             <h1 className="text-3xl font-bold mb-4 font-heading">
               Igreja Batista Independente de Parnaíba
@@ -52,7 +53,7 @@ const AuthPage = () => {
           <div className="space-y-6">
             <div className="flex items-start">
               <div className="bg-white/20 p-2 rounded-full mr-4">
-                <span className="material-icons text-white">forum</span>
+                <MessageCircle className="text-white" size={20} />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">Fórum da Comunidade</h3>
@@ -64,7 +65,7 @@ const AuthPage = () => {
             
             <div className="flex items-start">
               <div className="bg-white/20 p-2 rounded-full mr-4">
-                <span className="material-icons text-white">menu_book</span>
+                <BookOpen className="text-white" size={20} />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">Estudos Bíblicos</h3>
@@ -76,7 +77,7 @@ const AuthPage = () => {
             
             <div className="flex items-start">
               <div className="bg-white/20 p-2 rounded-full mr-4">
-                <span className="material-icons text-white">event_available</span>
+                <Calendar className="text-white" size={20} />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-1">Calendário de Eventos</h3>

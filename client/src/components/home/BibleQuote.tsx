@@ -1,6 +1,6 @@
 import { Quote } from 'lucide-react';
 import { motion } from 'framer-motion';
-import logoImage from '@/assets/logo.jpg';
+import pombaImage from '@/assets/church/pomba.jpg';
 
 interface BibleQuoteProps {
   quote: {
@@ -22,8 +22,8 @@ const BibleQuote = ({ quote }: BibleQuoteProps) => {
               transition={{ duration: 0.5 }}
             >
               <img 
-                src={logoImage} 
-                alt="IBI Parnaíba Logo" 
+                src={pombaImage} 
+                alt="Espírito Santo" 
                 className="w-full h-full object-cover"
               />
             </motion.div>

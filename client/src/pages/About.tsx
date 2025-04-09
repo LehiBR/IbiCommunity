@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import History from "@/components/about/History";
 import Leadership from "@/components/about/Leadership";
+import { Lightbulb, Eye, Heart } from "lucide-react";
 
 interface LeaderData {
   id: number;
@@ -90,7 +91,7 @@ const About = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
               <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-full mb-4">
-                <span className="material-icons text-white">lightbulb</span>
+                <Lightbulb className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-bold mb-3 text-primary">Missão</h3>
               <p className="text-gray-700">
@@ -100,7 +101,7 @@ const About = () => {
             </div>
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
               <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-full mb-4">
-                <span className="material-icons text-white">visibility</span>
+                <Eye className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-bold mb-3 text-primary">Visão</h3>
               <p className="text-gray-700">
@@ -110,7 +111,7 @@ const About = () => {
             </div>
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
               <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-full mb-4">
-                <span className="material-icons text-white">favorite</span>
+                <Heart className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-bold mb-3 text-primary">Valores</h3>
               <p className="text-gray-700">

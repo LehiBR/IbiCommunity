@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ResourceItem from "@/components/downloads/ResourceItem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FolderOpen, YoutubeIcon, Headphones, Image, BookOpen } from "lucide-react";
 import type { Resource } from "@shared/schema";
 
 // Resource categories
@@ -94,7 +95,7 @@ const Downloads = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <span className="material-icons text-gray-400 text-5xl mb-2">folder_open</span>
+                      <FolderOpen className="text-gray-400 w-12 h-12 mx-auto mb-2" />
                       <p className="text-gray-500">Nenhum recurso disponível nesta categoria.</p>
                     </div>
                   )}
@@ -107,19 +108,19 @@ const Downloads = () => {
             <h3 className="text-xl font-bold mb-4 font-heading text-primary">Links Úteis</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="flex items-center p-3 border rounded-lg hover:bg-primary hover:text-white transition">
-                <span className="material-icons mr-3">video_library</span>
+                <YoutubeIcon className="mr-3" size={20} />
                 <span>Canal do YouTube</span>
               </a>
               <a href="https://www.spotify.com" target="_blank" rel="noopener noreferrer" className="flex items-center p-3 border rounded-lg hover:bg-primary hover:text-white transition">
-                <span className="material-icons mr-3">podcasts</span>
+                <Headphones className="mr-3" size={20} />
                 <span>Podcast de Sermões</span>
               </a>
               <a href="https://photos.google.com" target="_blank" rel="noopener noreferrer" className="flex items-center p-3 border rounded-lg hover:bg-primary hover:text-white transition">
-                <span className="material-icons mr-3">photo_library</span>
+                <Image className="mr-3" size={20} />
                 <span>Galeria de Fotos</span>
               </a>
               <a href="#" className="flex items-center p-3 border rounded-lg hover:bg-primary hover:text-white transition">
-                <span className="material-icons mr-3">book</span>
+                <BookOpen className="mr-3" size={20} />
                 <span>Biblioteca Virtual</span>
               </a>
             </div>
