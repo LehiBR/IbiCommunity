@@ -336,11 +336,34 @@ export function setupAuth(app: Express): void {
         resetTokenExpiry
       });
 
-      // TODO: Enviar email com o link de reset
-      // Por enquanto, retornamos o token para teste
+      // Enviar email usando o nodemailer
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const resetUrl = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || '"Igreja Batista" <noreply@igreja.com>',
+        to: email,
+        subject: "Recuperação de Senha",
+        html: `
+          <h1>Recuperação de Senha</h1>
+          <p>Você solicitou a recuperação de senha. Clique no link abaixo para criar uma nova senha:</p>
+          <a href="${resetUrl}">Redefinir Senha</a>
+          <p>Se você não solicitou esta recuperação, ignore este email.</p>
+          <p>O link expira em 1 hora.</p>
+        `,
+      });
+
       res.json({ 
-        message: "Instruções de recuperação de senha foram enviadas para seu email",
-        token: resetToken // Remover em produção
+        message: "Instruções de recuperação de senha foram enviadas para seu email"
       });
     } catch (error) {
       next(error);
