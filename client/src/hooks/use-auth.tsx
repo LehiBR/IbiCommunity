@@ -125,17 +125,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (userData: Omit<User, "password">) => {
-      queryClient.setQueryData(["/api/user"], userData);
-      toast({
-        title: "Cadastro realizado com sucesso",
-        description: `Bem-vindo(a) à Igreja Batista Independente de Parnaíba, ${userData.name}!`,
-      });
-      setLocation("/dashboard");
+      try {
+        queryClient.setQueryData(["/api/user"], userData);
+        toast({
+          title: "Cadastro realizado com sucesso",
+          description: `Bem-vindo(a) à Igreja Batista Independente de Parnaíba, ${userData.name}!`,
+        });
+        setTimeout(() => {
+          setLocation("/dashboard");
+        }, 500);
+      } catch (error) {
+        console.error("Erro ao processar sucesso no cadastro:", error);
+      }
     },
     onError: (error: Error) => {
+      let errorMessage = error.message || "Não foi possível criar sua conta. Tente novamente.";
+      
+      if (errorMessage.includes("too_small") && errorMessage.includes("password")) {
+        errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+      } else if (errorMessage.includes("too_small") && errorMessage.includes("name")) {
+        errorMessage = "Nome completo é obrigatório.";
+      } else if (errorMessage.includes("too_small") && errorMessage.includes("username")) {
+        errorMessage = "Nome de usuário é obrigatório.";
+      } else if (errorMessage.includes("invalid_type") && errorMessage.includes("email")) {
+        errorMessage = "Email inválido.";
+      }
+      
       toast({
         title: "Falha no cadastro",
-        description: error.message || "Não foi possível criar sua conta. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     },

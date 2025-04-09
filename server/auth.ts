@@ -33,8 +33,11 @@ const loginSchema = z.object({
 
 // Registration validation with password confirmation
 const registerSchema = insertUserSchema.extend({
+  name: z.string().min(3, "Nome completo é obrigatório"),
+  username: z.string().min(3, "Nome de usuário é obrigatório"),
+  email: z.string().email("Email inválido"),
   password: passwordSchema,
-  confirmPassword: z.string(),
+  confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
