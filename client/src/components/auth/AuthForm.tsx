@@ -4,6 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth, type LoginData, type RegisterData } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,9 +124,49 @@ const AuthForm = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Senha</Label>
-                    <a href="#" className="text-sm text-primary hover:underline">
-                      Esqueceu a senha?
-                    </a>
+                    <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Esqueceu a senha?
+                  </button>
+
+                  {/* Modal de Recuperação de Senha */}
+                  {showForgotPassword && (
+                    <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Recuperar Senha</DialogTitle>
+                          <DialogDescription>
+                            Digite seu email para receber instruções de recuperação de senha.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleForgotPassword} className="space-y-4">
+                          <div>
+                            <Label htmlFor="recovery-email">Email</Label>
+                            <Input
+                              id="recovery-email"
+                              type="email"
+                              value={recoveryEmail}
+                              onChange={(e) => setRecoveryEmail(e.target.value)}
+                              placeholder="seu@email.com"
+                            />
+                          </div>
+                          <Button type="submit" className="w-full" disabled={isRecovering}>
+                            {isRecovering ? (
+                              <>
+                                <span className="material-icons animate-spin mr-2">autorenew</span>
+                                Enviando...
+                              </>
+                            ) : (
+                              "Enviar Instruções"
+                            )}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                   </div>
                   <Input
                     id="password"

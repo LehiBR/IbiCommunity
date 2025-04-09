@@ -311,6 +311,42 @@ export function setupAuth(app: Express): void {
     }
   });
 
+  // Password recovery route
+  app.post("/api/forgot-password", async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email é obrigatório" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      // Gerar token temporário
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+      // Salvar token no usuário
+      await storage.updateUser(user.id, {
+        resetToken,
+        resetTokenExpiry
+      });
+
+      // TODO: Enviar email com o link de reset
+      // Por enquanto, retornamos o token para teste
+      res.json({ 
+        message: "Instruções de recuperação de senha foram enviadas para seu email",
+        token: resetToken // Remover em produção
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Export middleware for use in other routes
   app.locals.isAuthenticated = isAuthenticated;
   app.locals.isAdmin = isAdmin;
