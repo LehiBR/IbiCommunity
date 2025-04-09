@@ -20,6 +20,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
   
+  // Rota temporária para criar o primeiro administrador (remover em produção)
+  app.get("/api/setup-admin", async (req, res, next) => {
+    try {
+      const user = await storage.getUserByUsername("admin");
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      const updatedUser = await storage.updateUser(user.id, { role: "admin" });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Erro ao atualizar usuário" });
+      }
+      
+      // Remove password from response
+      const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Admin routes for user management
   app.get("/api/admin/users", requireAdmin, async (req, res, next) => {
     try {
