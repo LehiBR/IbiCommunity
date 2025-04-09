@@ -143,6 +143,20 @@ export class MemStorage implements IStorage {
     }).then(user => {
       this.updateUser(user.id, { role: "admin" });
     });
+    
+    // Promover a administrador
+    setTimeout(() => {
+      // Atraso para garantir que os usuários sejam criados primeiro
+      this.getUserByUsername("newadmin").then(user => {
+        if (user) {
+          const updatedUser = { ...user, role: "admin" };
+          this.users.set(user.id, updatedUser);
+          console.log("Usuário newadmin promovido a administrador:", updatedUser);
+        } else {
+          console.log("Usuário newadmin não encontrado");
+        }
+      });
+    }, 1000);
   }
   
   // User methods

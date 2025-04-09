@@ -22,20 +22,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   
   // Rota temporária para criar o primeiro administrador (remover em produção)
-  app.get("/api/setup-admin", async (req, res, next) => {
+  app.post("/api/setup-admin", async (req, res, next) => {
     try {
-      const user = await storage.getUserByUsername("admin");
+      const username = req.body.username || "admin";
+      
+      const user = await storage.getUserByUsername(username);
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
-      // Criar uma nova senha e fazê-la hash
-      const newPassword = "admin123";
-      const hashedPassword = await hash(newPassword, 10);
-      
       const updatedUser = await storage.updateUser(user.id, { 
-        role: "admin",
-        password: hashedPassword 
+        role: "admin"
       });
       
       if (!updatedUser) {
@@ -46,7 +43,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = updatedUser;
       res.json({
         ...userWithoutSensitiveInfo,
-        message: "Senha redefinida para: " + newPassword
+        message: "Usuário promovido a administrador com sucesso!"
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Listar todos os usuários sem autenticação (apenas para depuração)
+  app.get("/api/list-users", async (req, res, next) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove password from response
+      const safeUsers = users.map(user => {
+        const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = user;
+        return userWithoutSensitiveInfo;
+      });
+      res.json(safeUsers);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Rota alternativa para configurar administrador pelo ID (mais fácil para testes)
+  app.get("/api/make-admin/:id", async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      const updatedUser = await storage.updateUser(id, { 
+        role: "admin"
+      });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Erro ao atualizar usuário" });
+      }
+      
+      // Remove password from response
+      const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json({
+        ...userWithoutSensitiveInfo,
+        message: "Usuário promovido a administrador com sucesso!"
       });
     } catch (error) {
       next(error);

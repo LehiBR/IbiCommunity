@@ -80,7 +80,12 @@ const AuthForm = () => {
 
   const onLoginSubmit = (data: LoginData) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: (user) => {
+        // Exibir informações sobre o usuário para depuração
+        console.log("Login bem-sucedido:", user);
+        if (user.role === "admin") {
+          console.log("Usuário tem permissões de administrador!");
+        }
         window.location.href = redirectTo;
       }
     });
