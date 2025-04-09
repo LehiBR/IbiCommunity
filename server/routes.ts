@@ -483,7 +483,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const resources = await storage.getResources(limit, offset, category, isPublic);
       
-      res.json(resources);
+      // Adicionar links do Drive para cada recurso
+      const resourcesWithDriveLinks = resources.map(resource => ({
+        ...resource,
+        downloadUrl: resource.driveFileId ? `https://drive.google.com/uc?export=download&id=${resource.driveFileId}` : null
+      }));
+      
+      res.json(resourcesWithDriveLinks);
     } catch (error) {
       next(error);
     }
