@@ -15,8 +15,10 @@ import {
   FiMenu, 
   FiX,
   FiSettings,
-  FiGrid
+  FiGrid,
+  FiRefreshCw
 } from 'react-icons/fi';
+import logoImage from '@/assets/logo.jpg';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -91,26 +93,19 @@ const Header = () => {
             variants={logoVariants}
           >
             <Link href="/" className="flex items-center">
-              <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white mr-3">
-                <motion.svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  initial={{ rotate: -10 }}
-                  animate={{ rotate: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <path d="M18 7c0 4.5-6 9-6 9s-6-4.5-6-9a6 6 0 0 1 12 0Z"></path>
-                  <circle cx="12" cy="7" r="1"></circle>
-                  <path d="M5 22v-4h14v4"></path>
-                </motion.svg>
-              </div>
+              <motion.div 
+                className="h-12 w-12 rounded-full overflow-hidden mr-3"
+                initial={{ rotate: -10, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img 
+                  src={logoImage} 
+                  alt="IBI Parnaíba Logo" 
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
               <div>
                 <motion.h1 
                   className="text-xl md:text-2xl font-bold text-primary"
