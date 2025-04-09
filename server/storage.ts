@@ -1,5 +1,5 @@
-import { users, posts, events, forumPosts, forumComments, resources, messages, photoAlbums } from "@shared/schema";
-import type { User, InsertUser, Post, InsertPost, Event, InsertEvent, ForumPost, InsertForumPost, ForumComment, InsertForumComment, Resource, InsertResource, Message, InsertMessage, PhotoAlbum, InsertPhotoAlbum } from "@shared/schema";
+import { users, posts, events, forumPosts, forumComments, resources, messages, photoAlbums, bibleStudyResources } from "@shared/schema";
+import type { User, InsertUser, Post, InsertPost, Event, InsertEvent, ForumPost, InsertForumPost, ForumComment, InsertForumComment, Resource, InsertResource, Message, InsertMessage, PhotoAlbum, InsertPhotoAlbum, BibleStudyResource, InsertBibleStudyResource } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -67,6 +67,19 @@ export interface IStorage {
   updatePhotoAlbum(id: number, album: Partial<Omit<PhotoAlbum, "id">>): Promise<PhotoAlbum | undefined>;
   deletePhotoAlbum(id: number): Promise<boolean>;
   
+  // Bible study resource operations
+  createBibleStudyResource(resource: InsertBibleStudyResource): Promise<BibleStudyResource>;
+  getBibleStudyResource(id: number): Promise<BibleStudyResource | undefined>;
+  getBibleStudyResources(
+    limit?: number, 
+    offset?: number, 
+    category?: string, 
+    contentType?: string,
+    isPublished?: boolean
+  ): Promise<BibleStudyResource[]>;
+  updateBibleStudyResource(id: number, resource: Partial<Omit<BibleStudyResource, "id">>): Promise<BibleStudyResource | undefined>;
+  deleteBibleStudyResource(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: session.SessionStore;
 }
@@ -81,6 +94,7 @@ export class MemStorage implements IStorage {
   private resources: Map<number, Resource>;
   private messages: Map<number, Message>;
   private photoAlbums: Map<number, PhotoAlbum>;
+  private bibleStudyResources: Map<number, BibleStudyResource>;
   
   private userIdCounter: number;
   private postIdCounter: number;
@@ -90,6 +104,7 @@ export class MemStorage implements IStorage {
   private resourceIdCounter: number;
   private messageIdCounter: number;
   private photoAlbumIdCounter: number;
+  private bibleStudyResourceIdCounter: number;
   
   public sessionStore: session.SessionStore;
   
@@ -102,6 +117,7 @@ export class MemStorage implements IStorage {
     this.resources = new Map();
     this.messages = new Map();
     this.photoAlbums = new Map();
+    this.bibleStudyResources = new Map();
     
     this.userIdCounter = 1;
     this.postIdCounter = 1;
@@ -111,6 +127,7 @@ export class MemStorage implements IStorage {
     this.resourceIdCounter = 1;
     this.messageIdCounter = 1;
     this.photoAlbumIdCounter = 1;
+    this.bibleStudyResourceIdCounter = 1;
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // 24 hours
@@ -480,6 +497,70 @@ export class MemStorage implements IStorage {
   
   async deletePhotoAlbum(id: number): Promise<boolean> {
     return this.photoAlbums.delete(id);
+  }
+  
+  // Bible study resource methods
+  async createBibleStudyResource(resourceData: InsertBibleStudyResource): Promise<BibleStudyResource> {
+    const id = this.bibleStudyResourceIdCounter++;
+    const now = new Date();
+    const resource: BibleStudyResource = {
+      id,
+      ...resourceData,
+      createdAt: now,
+      updatedAt: now,
+      viewCount: 0
+    };
+    this.bibleStudyResources.set(id, resource);
+    return resource;
+  }
+  
+  async getBibleStudyResource(id: number): Promise<BibleStudyResource | undefined> {
+    return this.bibleStudyResources.get(id);
+  }
+  
+  async getBibleStudyResources(
+    limit = 100, 
+    offset = 0, 
+    category?: string, 
+    contentType?: string,
+    isPublished?: boolean
+  ): Promise<BibleStudyResource[]> {
+    let resources = Array.from(this.bibleStudyResources.values());
+    
+    if (category) {
+      resources = resources.filter(resource => resource.category === category);
+    }
+    
+    if (contentType) {
+      resources = resources.filter(resource => resource.contentType === contentType);
+    }
+    
+    if (isPublished !== undefined) {
+      resources = resources.filter(resource => resource.isPublished === isPublished);
+    }
+    
+    // Sort by createdAt (newest first)
+    resources.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    
+    return resources.slice(offset, offset + limit);
+  }
+  
+  async updateBibleStudyResource(id: number, resourceData: Partial<Omit<BibleStudyResource, "id">>): Promise<BibleStudyResource | undefined> {
+    const resource = this.bibleStudyResources.get(id);
+    if (!resource) return undefined;
+    
+    const updatedResource = { 
+      ...resource, 
+      ...resourceData,
+      updatedAt: new Date() 
+    };
+    
+    this.bibleStudyResources.set(id, updatedResource);
+    return updatedResource;
+  }
+  
+  async deleteBibleStudyResource(id: number): Promise<boolean> {
+    return this.bibleStudyResources.delete(id);
   }
 }
 

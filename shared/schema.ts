@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -182,3 +182,33 @@ export const insertPhotoAlbumSchema = createInsertSchema(photoAlbums).pick({
 
 export type InsertPhotoAlbum = z.infer<typeof insertPhotoAlbumSchema>;
 export type PhotoAlbum = typeof photoAlbums.$inferSelect;
+
+// Bible study resources
+export const bibleStudyResources = pgTable("bible_study_resources", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  contentType: text("content_type").notNull(), // 'pdf', 'video', 'activity'
+  resourceUrl: text("resource_url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  category: text("category").notNull().default("general"),
+  authorId: serial("author_id").references(() => users.id),
+  isPublished: boolean("is_published").notNull().default(false),
+  viewCount: integer("view_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertBibleStudyResourceSchema = createInsertSchema(bibleStudyResources).pick({
+  title: true,
+  description: true,
+  contentType: true,
+  resourceUrl: true,
+  thumbnailUrl: true,
+  category: true,
+  authorId: true,
+  isPublished: true,
+});
+
+export type InsertBibleStudyResource = z.infer<typeof insertBibleStudyResourceSchema>;
+export type BibleStudyResource = typeof bibleStudyResources.$inferSelect;
