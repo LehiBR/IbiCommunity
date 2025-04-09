@@ -9,6 +9,9 @@ import { z } from "zod";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
+// Estas funções são exportadas para uso em outros módulos, mas não são usadas neste arquivo
+// para evitar a duplicação de funções, estamos utilizando diretamente as funções compare e hash do bcrypt
+
 // Augment the Express Request type to include user property
 declare global {
   namespace Express {
@@ -59,15 +62,8 @@ type RegisterData = z.infer<typeof registerSchema>;
 type LoginData = z.infer<typeof loginSchema>;
 type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
-// Hash password
-const hashPassword = async (password: string): Promise<string> => {
-  return await hash(password, 10);
-};
-
-// Verify password
-const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
-  return await compare(password, hashedPassword);
-};
+// As funções de hash e verify já foram definidas acima
+// Estamos removendo as duplicatas aqui
 
 // Configure passport and auth routes
 export function setupAuth(app: Express): void {
@@ -101,7 +97,7 @@ export function setupAuth(app: Express): void {
           return done(null, false, { message: "Nome de usuário ou senha incorretos" });
         }
         
-        const isValid = await verifyPassword(password, user.password);
+        const isValid = await compare(password, user.password);
         
         if (!isValid) {
           return done(null, false, { message: "Nome de usuário ou senha incorretos" });
@@ -212,7 +208,7 @@ export function setupAuth(app: Express): void {
       }
       
       // Hash password
-      const hashedPassword = await hashPassword(password);
+      const hashedPassword = await hash(password, 10);
       
       // Create user
       const user = await storage.createUser({
@@ -288,14 +284,14 @@ export function setupAuth(app: Express): void {
       }
       
       // Verify current password
-      const isCurrentPasswordValid = await verifyPassword(currentPassword, user.password);
+      const isCurrentPasswordValid = await compare(currentPassword, user.password);
       
       if (!isCurrentPasswordValid) {
         return res.status(400).json({ message: "Senha atual incorreta" });
       }
       
       // Hash the new password
-      const hashedNewPassword = await hashPassword(newPassword);
+      const hashedNewPassword = await hash(newPassword, 10);
       
       // Update the user's password
       const updatedUser = await storage.updateUser(req.user!.id, {
@@ -414,7 +410,7 @@ export function setupAuth(app: Express): void {
       }
       
       // Hash da nova senha
-      const hashedPassword = await hashPassword(newPassword);
+      const hashedPassword = await hash(newPassword, 10);
       
       // Atualizar a senha do usuário e limpar o token
       const updatedUser = await storage.updateUser(user.id, {

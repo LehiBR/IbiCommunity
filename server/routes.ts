@@ -3,6 +3,7 @@ import { Express, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, requireAuth, requireAdmin } from "./auth";
+import { hash } from "bcrypt";
 import {
   insertPostSchema,
   insertEventSchema,
@@ -28,7 +29,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
-      const updatedUser = await storage.updateUser(user.id, { role: "admin" });
+      // Criar uma nova senha e fazê-la hash
+      const newPassword = "admin123";
+      const hashedPassword = await hash(newPassword, 10);
+      
+      const updatedUser = await storage.updateUser(user.id, { 
+        role: "admin",
+        password: hashedPassword 
+      });
       
       if (!updatedUser) {
         return res.status(500).json({ message: "Erro ao atualizar usuário" });
@@ -36,7 +44,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Remove password from response
       const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = updatedUser;
-      res.json(userWithoutSensitiveInfo);
+      res.json({
+        ...userWithoutSensitiveInfo,
+        message: "Senha redefinida para: " + newPassword
+      });
     } catch (error) {
       next(error);
     }
