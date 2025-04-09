@@ -6,6 +6,8 @@ import { compare, hash } from "bcrypt";
 import { storage } from "./storage";
 import { insertUserSchema, type User, type InsertUser } from "@shared/schema";
 import { z } from "zod";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 // Augment the Express Request type to include user property
 declare global {
@@ -311,7 +313,7 @@ export function setupAuth(app: Express): void {
     }
   });
 
-  // Password recovery route
+  // Password recovery route - Solicita recuperação de senha
   app.post("/api/forgot-password", async (req, res, next) => {
     try {
       const { email } = req.body;
@@ -347,7 +349,7 @@ export function setupAuth(app: Express): void {
         },
       });
 
-      const resetUrl = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
+      const resetUrl = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
 
       await transporter.sendMail({
         from: process.env.SMTP_FROM || '"Igreja Batista" <noreply@igreja.com>',
@@ -365,6 +367,63 @@ export function setupAuth(app: Express): void {
       res.json({ 
         message: "Instruções de recuperação de senha foram enviadas para seu email"
       });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Define o esquema para a validação da redefinição de senha
+  const resetPasswordSchema = z.object({
+    token: z.string().min(1, "Token é obrigatório"),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string().min(1, "Confirmação da nova senha é obrigatória"),
+  }).refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmNewPassword"],
+  });
+
+  // Reset password route - Redefine a senha com o token recebido via email
+  app.post("/api/reset-password", async (req, res, next) => {
+    try {
+      // Validar os dados do formulário
+      const validatedData = resetPasswordSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ errors: validatedData.error.errors });
+      }
+      
+      const { token, newPassword } = validatedData.data;
+      
+      // Procurar usuário com o token fornecido
+      // Precisaríamos de um método específico para buscar por token, mas como não temos,
+      // vamos fazer uma implementação temporária buscando todos os usuários
+      // Normalmente isso seria feito com uma consulta SQL direta
+      const allUsers = await storage.getAllUsers();
+      const user = allUsers.find(
+        (u: User) => u.resetToken === token && u.resetTokenExpiry && new Date(u.resetTokenExpiry) > new Date()
+      );
+      
+      if (!user) {
+        return res.status(400).json({ 
+          message: "Token inválido ou expirado. Por favor, solicite um novo link de recuperação de senha." 
+        });
+      }
+      
+      // Hash da nova senha
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Atualizar a senha do usuário e limpar o token
+      const updatedUser = await storage.updateUser(user.id, {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null
+      });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Erro ao redefinir a senha" });
+      }
+      
+      res.json({ message: "Senha redefinida com sucesso. Agora você pode fazer login com sua nova senha." });
     } catch (error) {
       next(error);
     }

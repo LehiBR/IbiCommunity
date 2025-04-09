@@ -95,11 +95,36 @@ const AuthForm = () => {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsRecovering(true);
-    // Implementar lógica de recuperação de senha aqui
-    setTimeout(() => {
-      setIsRecovering(false);
+    
+    try {
+      // Verificar se o email foi fornecido
+      if (!recoveryEmail || recoveryEmail.trim() === "") {
+        throw new Error("Por favor, digite seu email");
+      }
+      
+      // Enviar solicitação de recuperação de senha
+      const response = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: recoveryEmail }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao processar a solicitação");
+      }
+      
+      // Se chegou até aqui, exibe mensagem de sucesso
+      alert(data.message);
       setShowForgotPassword(false);
-    }, 2000);
+    } catch (error: any) {
+      alert(error.message || "Ocorreu um erro. Por favor, tente novamente.");
+    } finally {
+      setIsRecovering(false);
+    }
   };
 
   return (

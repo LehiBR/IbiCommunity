@@ -19,6 +19,7 @@ import Downloads from "@/pages/Downloads";
 import Contact from "@/pages/Contact";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/AuthPage";
+import ResetPassword from "@/pages/ResetPassword";
 
 // Protected routes
 import { ProtectedRoute } from "./lib/protected-route";
@@ -88,6 +89,7 @@ function AppRouter() {
           <Route path="/downloads" component={Downloads} />
           <Route path="/contact" component={Contact} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/reset-password" component={ResetPassword} />
           
           {/* Protected Routes */}
           <ProtectedRoute path="/dashboard" component={Dashboard} />
