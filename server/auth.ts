@@ -171,14 +171,20 @@ export function setupAuth(app: Express): void {
     try {
       console.log("Register request body:", req.body);
       
-      // Validate request
+      // Validate request com confirmPassword
       const validatedData = registerSchema.safeParse(req.body);
       
       if (!validatedData.success) {
+        console.error("Erro de validação:", validatedData.error.errors);
         return res.status(400).json({ errors: validatedData.error.errors });
       }
       
-      const { username, email, name, password } = validatedData.data;
+      const { username, email, name, password, confirmPassword } = validatedData.data;
+      
+      // Validação extra das senhas
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "As senhas não coincidem" });
+      }
       
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(username);

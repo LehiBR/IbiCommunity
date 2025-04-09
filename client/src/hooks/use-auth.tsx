@@ -111,16 +111,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
       try {
-        const { confirmPassword, ...registerData } = data;
-        const res = await apiRequest("POST", "/api/register", registerData);
+        console.log("Enviando dados para o servidor:", data);
+        // Enviamos todos os dados incluindo confirmPassword
+        const res = await apiRequest("POST", "/api/register", data);
         
         if (!res.ok) {
           const errorData = await res.json();
+          console.error("Erro no registro:", errorData);
           throw new Error(errorData.message || errorData.errors?.[0]?.message || "Erro ao cadastrar");
         }
         
         return await res.json();
       } catch (error) {
+        console.error("Erro completo:", error);
         if (error instanceof Error) {
           throw error;
         }

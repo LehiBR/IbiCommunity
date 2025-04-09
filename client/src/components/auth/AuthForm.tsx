@@ -75,6 +75,7 @@ const AuthForm = () => {
   };
 
   const onRegisterSubmit = (data: RegisterData) => {
+    console.log("Dados de registro:", data);
     registerMutation.mutate(data, {
       onSuccess: () => {
         window.location.href = redirectTo;
