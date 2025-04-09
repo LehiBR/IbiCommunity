@@ -1,251 +1,258 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import type { BibleStudyResource } from "@shared/schema";
-import { Download, FileText, Video, BookText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Search, FileText, Video, Music, FileQuestion, Filter, BookOpen } from "lucide-react";
+import { motion } from "framer-motion";
 
-interface StudyResourceProps {
-  resource: BibleStudyResource;
-}
+export default function BibleStudy() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [selectedType, setSelectedType] = useState("todos");
+  
+  // Fetch estudos bíblicos
+  const { data: studies, isLoading, error } = useQuery({
+    queryKey: ["/api/bible-study-resources"], 
+    retry: 1,
+  });
 
-// Componente para exibir um recurso de estudo bíblico
-const StudyResourceItem = ({ resource }: StudyResourceProps) => {
-  // Define o ícone com base no tipo de conteúdo
-  const getIcon = () => {
-    switch (resource.contentType) {
-      case 'pdf':
-        return <FileText className="h-5 w-5 text-red-500" />;
-      case 'video':
-        return <Video className="h-5 w-5 text-blue-500" />;
-      case 'activity':
-        return <BookText className="h-5 w-5 text-green-500" />;
-      default:
-        return <FileText className="h-5 w-5 text-gray-500" />;
+  // Filtrar por categoria e tipo
+  const filteredStudies = studies
+    ? studies
+        .filter((study: any) => study.isPublished)
+        .filter((study: any) => 
+          searchTerm === "" || 
+          study.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+          (study.description && study.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .filter((study: any) => 
+          selectedCategory === "todos" || study.category === selectedCategory
+        )
+        .filter((study: any) => 
+          selectedType === "todos" || study.contentType === selectedType
+        )
+    : [];
+
+  // Extrair categorias únicas
+  const categories = studies
+    ? ["todos", ...new Set(studies
+        .filter((study: any) => study.isPublished)
+        .map((study: any) => study.category))]
+    : ["todos"];
+
+  // Tipos de conteúdo
+  const contentTypes = [
+    { id: "todos", name: "Todos", icon: <Filter className="h-4 w-4" /> },
+    { id: "pdf", name: "PDF", icon: <FileText className="h-4 w-4" /> },
+    { id: "video", name: "Vídeo", icon: <Video className="h-4 w-4" /> },
+    { id: "audio", name: "Áudio", icon: <Music className="h-4 w-4" /> },
+    { id: "text", name: "Texto", icon: <BookOpen className="h-4 w-4" /> },
+  ];
+
+  // Atualizar contagem de visualizações ao abrir um recurso
+  const viewResource = async (id: number, url: string) => {
+    try {
+      // Chamar endpoint para atualizar contagem de visualizações
+      await fetch(`/api/bible-study/${id}/view`, {
+        method: "POST",
+      });
+      
+      // Abrir o recurso em uma nova aba
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Erro ao atualizar visualizações:", error);
+      // Se falhar a atualização, ainda abre o recurso
+      window.open(url, "_blank");
     }
   };
 
-  return (
-    <div className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-      <div className="flex-shrink-0">
-        {resource.thumbnailUrl ? (
-          <img 
-            src={resource.thumbnailUrl} 
-            alt={resource.title} 
-            className="w-16 h-16 object-cover rounded-md"
-          />
-        ) : (
-          <div className="w-16 h-16 flex items-center justify-center rounded-md bg-gray-100">
-            {getIcon()}
-          </div>
-        )}
+  // Obter ícone para tipo de conteúdo
+  const getContentTypeIcon = (type: string) => {
+    switch (type) {
+      case "pdf":
+        return <FileText className="h-5 w-5" />;
+      case "video":
+        return <Video className="h-5 w-5" />;
+      case "audio":
+        return <Music className="h-5 w-5" />;
+      case "text":
+        return <BookOpen className="h-5 w-5" />;
+      default:
+        return <FileQuestion className="h-5 w-5" />;
+    }
+  };
+
+  // Animação para os cards
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+      },
+    }),
+  };
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-12 text-center">
+        <h1 className="text-2xl font-bold mb-4">Erro ao carregar recursos</h1>
+        <p className="text-muted-foreground mb-6">
+          Não foi possível carregar os estudos bíblicos. Por favor, tente novamente mais tarde.
+        </p>
+        <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
       </div>
-      
-      <div className="flex-grow min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-lg font-medium truncate">{resource.title}</h3>
-          <Badge variant={
-            resource.contentType === 'pdf' ? 'destructive' : 
-            resource.contentType === 'video' ? 'default' : 'outline'
-          }>
-            {resource.contentType.toUpperCase()}
-          </Badge>
-        </div>
-        
-        {resource.description && (
-          <p className="text-gray-600 text-sm line-clamp-2">{resource.description}</p>
-        )}
-        
-        <div className="flex items-center gap-4 mt-2">
-          <span className="text-xs text-gray-500">
-            {new Date(resource.createdAt).toLocaleDateString('pt-BR')}
-          </span>
-          <span className="text-xs text-gray-500 flex items-center gap-1">
-            <BookText className="h-3 w-3" /> {resource.viewCount} visualizações
-          </span>
-        </div>
-      </div>
-      
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="flex-shrink-0 whitespace-nowrap"
-        onClick={() => window.open(resource.resourceUrl, '_blank')}
-      >
-        <Download className="h-4 w-4 mr-1" />
-        {resource.contentType === 'video' ? 'Assistir' : 'Baixar'}
-      </Button>
-    </div>
-  );
-};
-
-const BibleStudy = () => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-
-  // Buscar todos os recursos de estudo bíblico
-  const { data: bibleResources, isLoading } = useQuery<BibleStudyResource[]>({
-    queryKey: ["/api/bible-study-resources"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/bible-study-resources");
-        if (!res.ok) throw new Error("Falha ao carregar recursos de estudo bíblico");
-        return await res.json();
-      } catch (error) {
-        toast({
-          title: "Erro ao carregar recursos",
-          description: "Ocorreu um erro ao carregar os recursos de estudo bíblico.",
-          variant: "destructive",
-        });
-        throw error;
-      }
-    }
-  });
-
-  // Filtrar recursos com base na aba selecionada
-  const filteredResources = bibleResources?.filter(resource => {
-    // Filtrar por tipo de conteúdo
-    if (activeTab !== "all" && resource.contentType !== activeTab) {
-      return false;
-    }
-    
-    // Filtrar por categoria
-    if (categoryFilter && resource.category !== categoryFilter) {
-      return false;
-    }
-    
-    return true;
-  }) || [];
-
-  // Obter categorias únicas para o filtro
-  const categories: string[] = [];
-  if (bibleResources && bibleResources.length > 0) {
-    const categorySet = new Set<string>();
-    for (const resource of bibleResources) {
-      if (resource.category) {
-        categorySet.add(resource.category);
-      }
-    }
-    // Converter o Set para Array
-    categories.push(...Array.from(categorySet));
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Estudos Bíblicos</h1>
-          <p className="text-gray-600">
-            Acesse materiais de estudo, vídeos e atividades para aprofundar seu conhecimento bíblico.
+    <div className="container mx-auto py-12">
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Estudos Bíblicos</h1>
+          <p className="text-muted-foreground">
+            Acesse materiais de estudo, sermões, devocionais e recursos para o seu crescimento espiritual.
           </p>
         </div>
 
-        {/* Filtros para tipo de conteúdo */}
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid grid-cols-4 mb-2">
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="pdf">PDFs</TabsTrigger>
-            <TabsTrigger value="video">Vídeos</TabsTrigger>
-            <TabsTrigger value="activity">Atividades</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Filtros para categoria */}
-        {categories.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-2">Filtrar por categoria:</h3>
-            <div className="flex flex-wrap gap-2">
-              <Badge 
-                variant={categoryFilter === null ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setCategoryFilter(null)}
-              >
-                Todas
-              </Badge>
-              {categories.map(category => (
-                <Badge 
-                  key={category} 
-                  variant={categoryFilter === category ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => setCategoryFilter(category)}
-                >
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </Badge>
-              ))}
+        <div className="grid gap-6">
+          {/* Pesquisa e filtros */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Buscar estudos..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Lista de recursos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recursos de Estudo Bíblico</CardTitle>
-            <CardDescription>
-              Materiais para seu crescimento espiritual e conhecimento bíblico
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4 border rounded-lg animate-pulse">
-                    <div className="w-16 h-16 bg-gray-200 rounded-md"></div>
-                    <div className="flex-grow">
-                      <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                    </div>
-                    <div className="w-24 h-8 bg-gray-200 rounded"></div>
-                  </div>
+          {/* Tabs com categorias */}
+          <div className="overflow-auto">
+            <Tabs defaultValue="todos" value={selectedCategory} onValueChange={setSelectedCategory}>
+              <TabsList className="h-auto flex flex-nowrap overflow-x-auto p-0 bg-transparent space-x-2">
+                {categories.map((category) => (
+                  <TabsTrigger 
+                    key={category} 
+                    value={category}
+                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    {category}
+                  </TabsTrigger>
                 ))}
-              </div>
-            ) : filteredResources.length > 0 ? (
-              <div className="space-y-4">
-                {filteredResources.map(resource => (
-                  <StudyResourceItem key={resource.id} resource={resource} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum recurso encontrado</h3>
-                <p className="text-gray-500">
-                  {categoryFilter || activeTab !== "all" ? 
-                    "Tente mudar os filtros de busca para ver mais resultados." : 
-                    "Novos recursos serão adicionados em breve."}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        
-        {/* Weekly verse */}
-        <Card className="mt-8 bg-primary text-white">
-          <CardHeader>
-            <CardTitle>Versículo da Semana</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <blockquote className="bible-quote text-xl">
-              "Porque pela graça sois salvos, por meio da fé; e isto não vem de vós, é dom de Deus."
-            </blockquote>
-            <footer className="mt-4 text-right font-medium">
-              — Efésios 2:8
-            </footer>
-          </CardContent>
-        </Card>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Filtro por tipo de conteúdo */}
+          <div className="flex flex-wrap gap-2">
+            {contentTypes.map((type) => (
+              <Button
+                key={type.id}
+                variant={selectedType === type.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedType(type.id)}
+                className="flex items-center gap-1"
+              >
+                {type.icon}
+                <span>{type.name}</span>
+              </Button>
+            ))}
+          </div>
+
+          <Separator />
+
+          {/* Lista de estudos */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredStudies.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium mb-2">Nenhum estudo encontrado</h3>
+              <p className="text-muted-foreground">
+                Tente mudar os filtros ou a busca para encontrar mais resultados.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredStudies.map((study: any, index: number) => (
+                <motion.div
+                  key={study.id}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  custom={index}
+                >
+                  <Card className="overflow-hidden h-full flex flex-col">
+                    {study.thumbnailUrl ? (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={study.thumbnailUrl}
+                          alt={study.title}
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-muted flex items-center justify-center">
+                        {getContentTypeIcon(study.contentType)}
+                      </div>
+                    )}
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{study.title}</CardTitle>
+                        <Badge variant="outline">{study.contentType}</Badge>
+                      </div>
+                      <CardDescription>
+                        {study.category}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-2 flex-grow">
+                      {study.description ? (
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {study.description}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          Sem descrição disponível
+                        </p>
+                      )}
+                    </CardContent>
+                    <CardFooter>
+                      <div className="w-full flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">
+                          {study.viewCount} visualizações
+                        </span>
+                        <Button 
+                          size="sm"
+                          onClick={() => viewResource(study.id, study.resourceUrl)}
+                        >
+                          Acessar
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default BibleStudy;
+}

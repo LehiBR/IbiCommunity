@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { UserManagement } from "./UserManagement";
 import { ContentManagement } from "./ContentManagement";
+import { BibleStudyManagement } from "./BibleStudyManagement";
 import { DashboardStats } from "./DashboardStats";
 import { motion } from "framer-motion";
 
@@ -92,10 +93,11 @@ export function AdminDashboard() {
       
       <motion.div variants={itemVariants}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 lg:w-[400px]">
+          <TabsList className="grid grid-cols-4 lg:w-[500px]">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="users">Usuários</TabsTrigger>
             <TabsTrigger value="content">Conteúdo</TabsTrigger>
+            <TabsTrigger value="studies">Estudos</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="mt-6">
@@ -127,6 +129,16 @@ export function AdminDashboard() {
               transition={{ duration: 0.5 }}
             >
               <ContentManagement />
+            </motion.div>
+          </TabsContent>
+          
+          <TabsContent value="studies" className="mt-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <BibleStudyManagement />
             </motion.div>
           </TabsContent>
         </Tabs>

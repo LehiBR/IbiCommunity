@@ -948,6 +948,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Alias para bible-study (usado pelo componente BibleStudyForm)
+  app.get("/api/bible-study", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      const category = req.query.category as string | undefined;
+      const contentType = req.query.contentType as string | undefined;
+      
+      const resources = await storage.getBibleStudyResources(limit, offset, category, contentType);
+      
+      // Add author info
+      const resourcesWithAuthor = await Promise.all(
+        resources.map(async (resource) => {
+          const author = await storage.getUser(resource.authorId);
+          const { password, ...authorWithoutPassword } = author || { 
+            id: 0, 
+            username: "unknown", 
+            email: "", 
+            name: "Usuário Desconhecido", 
+            role: "unknown",
+            avatar: null,
+            createdAt: new Date()
+          };
+          
+          return {
+            ...resource,
+            author: authorWithoutPassword
+          };
+        })
+      );
+      
+      res.json(resourcesWithAuthor);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Registrar visualização do estudo
+  app.post("/api/bible-study/:id/view", async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "ID inválido" });
+      }
+      
+      const resource = await storage.getBibleStudyResource(id);
+      if (!resource) {
+        return res.status(404).json({ message: "Estudo não encontrado" });
+      }
+      
+      // Incrementar visualizações
+      await storage.updateBibleStudyResource(id, { 
+        viewCount: resource.viewCount + 1 
+      });
+      
+      res.status(200).json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.get("/api/bible-study-resources/:id", async (req, res, next) => {
     try {
@@ -1004,6 +1065,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Alias para o formulário de criação de estudos
+  app.post("/api/bible-study", requireAdmin, async (req, res, next) => {
+    try {
+      const resourceData = insertBibleStudyResourceSchema.parse({
+        ...req.body,
+        authorId: req.user.id
+      });
+      
+      const resource = await storage.createBibleStudyResource(resourceData);
+      res.status(201).json(resource);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      next(error);
+    }
+  });
 
   app.put("/api/bible-study-resources/:id", requireAdmin, async (req, res, next) => {
     try {
@@ -1023,8 +1102,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Alias para o formulário de edição de estudos
+  app.put("/api/bible-study/:id", requireAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const resource = await storage.getBibleStudyResource(id);
+      
+      if (!resource) {
+        return res.status(404).json({ message: "Recurso não encontrado" });
+      }
+      
+      const updatedResource = await storage.updateBibleStudyResource(id, req.body);
+      res.json(updatedResource);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      next(error);
+    }
+  });
 
   app.delete("/api/bible-study-resources/:id", requireAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBibleStudyResource(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Recurso não encontrado" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Alias para excluir estudos
+  app.delete("/api/bible-study/:id", requireAdmin, async (req, res, next) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteBibleStudyResource(id);
