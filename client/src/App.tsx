@@ -28,6 +28,7 @@ import Forum from "@/pages/Forum";
 import BibleStudy from "@/pages/BibleStudy";
 import Photos from "@/pages/Photos";
 import ProfilePage from "@/pages/ProfilePage";
+import AdminPage from "@/pages/AdminPage";
 
 function AppRouter() {
   const [location] = useLocation();
@@ -98,6 +99,7 @@ function AppRouter() {
           <ProtectedRoute path="/forum/:id" component={Forum} />
           <ProtectedRoute path="/biblestudy" component={BibleStudy} />
           <ProtectedRoute path="/photos" component={Photos} />
+          <ProtectedRoute path="/admin" component={AdminPage} />
           
           {/* Not Found */}
           <Route component={NotFound} />

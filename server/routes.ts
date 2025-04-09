@@ -19,6 +19,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Set up authentication routes
   setupAuth(app);
+  
+  // Admin routes for user management
+  app.get("/api/admin/users", requireAdmin, async (req, res, next) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove password from response
+      const safeUsers = users.map(user => {
+        const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = user;
+        return userWithoutSensitiveInfo;
+      });
+      res.json(safeUsers);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/users/:id", requireAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Remove password from response
+      const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = user;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.put("/api/admin/users/:id", requireAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Prevent changing your own role if you're an admin (safety measure)
+      if (id === req.user.id && req.body.role && req.body.role !== user.role) {
+        return res.status(400).json({ message: "Você não pode alterar seu próprio nível de acesso" });
+      }
+      
+      const updatedUser = await storage.updateUser(id, req.body);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Erro ao atualizar usuário" });
+      }
+      
+      // Remove password from response
+      const { password, resetToken, resetTokenExpiry, ...userWithoutSensitiveInfo } = updatedUser;
+      res.json(userWithoutSensitiveInfo);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Admin dashboard statistics
+  app.get("/api/admin/stats", requireAdmin, async (req, res, next) => {
+    try {
+      const users = await storage.getAllUsers();
+      const posts = await storage.getPosts();
+      const events = await storage.getEvents();
+      const forumPosts = await storage.getForumPosts();
+      const resources = await storage.getResources();
+      const bibleStudies = await storage.getBibleStudyResources();
+      
+      // Count users by role
+      const usersByRole = users.reduce((acc, user) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Count resources by type
+      const resourcesByType = resources.reduce((acc, resource) => {
+        acc[resource.fileType] = (acc[resource.fileType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Get recent activity
+      const recentPosts = posts.slice(0, 5);
+      const recentEvents = events.slice(0, 5);
+      const recentForumPosts = forumPosts.slice(0, 5);
+      
+      res.json({
+        counts: {
+          users: users.length,
+          posts: posts.length,
+          events: events.length,
+          forumPosts: forumPosts.length,
+          resources: resources.length,
+          bibleStudies: bibleStudies.length
+        },
+        usersByRole,
+        resourcesByType,
+        recentActivity: {
+          posts: recentPosts,
+          events: recentEvents,
+          forumPosts: recentForumPosts
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // API routes
   // Posts (News/Updates)

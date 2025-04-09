@@ -65,6 +65,14 @@ const Header = () => {
                     Meu Painel
                   </Button>
                 </Link>
+                {user.role === 'admin' && (
+                  <Link href="/admin">
+                    <Button variant="secondary" size="sm" className="flex items-center bg-amber-500 hover:bg-amber-600 text-white">
+                      <span className="material-icons text-sm mr-1">admin_panel_settings</span>
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Button variant="outline" size="sm" onClick={handleLogout} disabled={logoutMutation.isPending}>
                   {logoutMutation.isPending ? (
                     <span className="material-icons animate-spin">autorenew</span>
@@ -126,6 +134,14 @@ const Header = () => {
                       Meu Painel
                     </Button>
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link href="/admin">
+                      <Button variant="secondary" className="w-full justify-start bg-amber-500 hover:bg-amber-600 text-white">
+                        <span className="material-icons mr-2">admin_panel_settings</span>
+                        Administração
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="outline"
                     className="w-full justify-start"
