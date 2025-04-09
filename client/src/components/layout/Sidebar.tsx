@@ -29,6 +29,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
 
   const menuItems = [
     { path: '/dashboard', icon: 'dashboard', label: 'Painel' },
+    { path: '/profile', icon: 'account_circle', label: 'Meu Perfil' },
     { path: '/forum', icon: 'forum', label: 'Fórum' },
     { path: '/biblestudy', icon: 'auto_stories', label: 'Estudos Bíblicos' },
     { path: '/photos', icon: 'photo_library', label: 'Galeria de Fotos' },

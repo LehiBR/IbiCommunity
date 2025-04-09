@@ -43,8 +43,19 @@ const registerSchema = insertUserSchema.extend({
   path: ["confirmPassword"],
 });
 
+// Change password validation schema
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Senha atual é obrigatória"),
+  newPassword: passwordSchema,
+  confirmNewPassword: z.string().min(1, "Confirmação da nova senha é obrigatória"),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmNewPassword"],
+});
+
 type RegisterData = z.infer<typeof registerSchema>;
 type LoginData = z.infer<typeof loginSchema>;
+type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
 // Hash password
 const hashPassword = async (password: string): Promise<string> => {
@@ -244,6 +255,60 @@ export function setupAuth(app: Express): void {
       return res.json(req.user);
     }
     res.status(401).json({ message: "Não autenticado" });
+  });
+
+  // Change password route
+  app.post("/api/change-password", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Validate request data
+      const validatedData = changePasswordSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ errors: validatedData.error.errors });
+      }
+      
+      const { currentPassword, newPassword, confirmNewPassword } = validatedData.data;
+      
+      // Validate that passwords match
+      if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({ message: "As novas senhas não coincidem" });
+      }
+      
+      // Get the current user
+      if (!req.user) {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+      
+      const user = await storage.getUser(req.user.id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Verify current password
+      const isCurrentPasswordValid = await verifyPassword(currentPassword, user.password);
+      
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Senha atual incorreta" });
+      }
+      
+      // Hash the new password
+      const hashedNewPassword = await hashPassword(newPassword);
+      
+      // Update the user's password
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        password: hashedNewPassword
+      });
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Falha ao atualizar a senha" });
+      }
+      
+      // Return success response
+      res.status(200).json({ message: "Senha alterada com sucesso" });
+    } catch (error) {
+      next(error);
+    }
   });
 
   // Export middleware for use in other routes

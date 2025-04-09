@@ -26,6 +26,7 @@ import Dashboard from "@/pages/Dashboard";
 import Forum from "@/pages/Forum";
 import BibleStudy from "@/pages/BibleStudy";
 import Photos from "@/pages/Photos";
+import ProfilePage from "@/pages/ProfilePage";
 
 function AppRouter() {
   const [location] = useLocation();
@@ -56,6 +57,7 @@ function AppRouter() {
         contact: "Contato",
         auth: "Entrar",
         dashboard: "Meu Painel",
+        profile: "Meu Perfil",
         forum: "Fórum",
         biblestudy: "Estudos Bíblicos",
         photos: "Galeria de Fotos"
@@ -89,6 +91,7 @@ function AppRouter() {
           
           {/* Protected Routes */}
           <ProtectedRoute path="/dashboard" component={Dashboard} />
+          <ProtectedRoute path="/profile" component={ProfilePage} />
           <ProtectedRoute path="/forum" component={Forum} />
           <ProtectedRoute path="/forum/:id" component={Forum} />
           <ProtectedRoute path="/biblestudy" component={BibleStudy} />
