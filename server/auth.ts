@@ -338,39 +338,16 @@ export function setupAuth(app: Express): void {
         resetTokenExpiry
       });
 
-      // Enviar email usando o nodemailer
-      let transporter;
-      
-      // Verifica se é ambiente de produção ou teste
-      if (process.env.NODE_ENV === 'production') {
-        // Configuração para produção (Gmail ou outro serviço)
-        transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || "smtp.gmail.com",
-          port: parseInt(process.env.SMTP_PORT || "587"),
-          secure: process.env.SMTP_SECURE === "true",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
-      } else {
-        // Para ambiente de desenvolvimento, usamos Ethereal (contas de teste)
-        // Cria uma conta de teste do Ethereal
-        const testAccount = await nodemailer.createTestAccount();
-        
-        // Cria um transportador do Ethereal
-        transporter = nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false, // true para 465, false para outras portas
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        });
-        
-        console.log('Criada conta de teste para emails: ', testAccount.user);
-      }
+      // Enviar email usando o nodemailer com configuração do Gmail
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
 
       const resetUrl = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
 
@@ -389,12 +366,7 @@ export function setupAuth(app: Express): void {
       };
       
       // Envia o email
-      const info = await transporter.sendMail(mailOptions);
-      
-      // Se estiver no modo de desenvolvimento com Ethereal, mostra a URL de visualização
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('URL para visualizar o email: %s', nodemailer.getTestMessageUrl(info));
-      }
+      await transporter.sendMail(mailOptions);
 
       res.json({ 
         message: "Instruções de recuperação de senha foram enviadas para seu email"
