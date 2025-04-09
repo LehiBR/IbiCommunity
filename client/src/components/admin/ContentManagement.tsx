@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash2, Eye } from "lucide-react";
+import { Loader2, Trash2, Eye, Plus, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,9 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { PostForm } from "./forms/PostForm";
+import { EventForm } from "./forms/EventForm";
+import { ResourceForm } from "./forms/ResourceForm";
 
 interface Post {
   id: number;
@@ -65,6 +68,8 @@ export function ContentManagement() {
   const [activeTab, setActiveTab] = useState("posts");
   const [confirmDelete, setConfirmDelete] = useState<{ type: string; id: number } | null>(null);
   const [viewItem, setViewItem] = useState<any | null>(null);
+  const [createFormOpen, setCreateFormOpen] = useState<string | null>(null);
+  const [editItem, setEditItem] = useState<any | null>(null);
   
   // Fetch posts
   const { data: posts, isLoading: isLoadingPosts } = useQuery<Post[]>({
@@ -162,6 +167,20 @@ export function ContentManagement() {
     setViewItem({ type, data: item });
   };
   
+  const handleEdit = (type: string, item: any) => {
+    setEditItem({ type, data: item });
+  };
+  
+  const handleCreateNew = (type: string) => {
+    setCreateFormOpen(type);
+  };
+  
+  const handleFormSuccess = () => {
+    // Fechar formulários e limpar estados
+    setCreateFormOpen(null);
+    setEditItem(null);
+  };
+  
   const renderLoading = () => (
     <div className="flex items-center justify-center h-64">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -187,6 +206,13 @@ export function ContentManagement() {
             </TabsList>
             
             <TabsContent value="posts" className="mt-4">
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => handleCreateNew('post')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova postagem
+                </Button>
+              </div>
+              
               {isLoadingPosts ? renderLoading() : (
                 <Table>
                   <TableHeader>
@@ -223,6 +249,13 @@ export function ContentManagement() {
                             <Button 
                               size="icon" 
                               variant="ghost" 
+                              onClick={() => handleEdit('post', post)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
                               onClick={() => handleDelete('post', post.id)}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -237,6 +270,13 @@ export function ContentManagement() {
             </TabsContent>
             
             <TabsContent value="events" className="mt-4">
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => handleCreateNew('event')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo evento
+                </Button>
+              </div>
+              
               {isLoadingEvents ? renderLoading() : (
                 <Table>
                   <TableHeader>
@@ -269,6 +309,13 @@ export function ContentManagement() {
                             <Button 
                               size="icon" 
                               variant="ghost" 
+                              onClick={() => handleEdit('event', event)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
                               onClick={() => handleDelete('event', event.id)}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -283,6 +330,13 @@ export function ContentManagement() {
             </TabsContent>
             
             <TabsContent value="resources" className="mt-4">
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => handleCreateNew('resource')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo recurso
+                </Button>
+              </div>
+              
               {isLoadingResources ? renderLoading() : (
                 <Table>
                   <TableHeader>
@@ -315,6 +369,13 @@ export function ContentManagement() {
                               onClick={() => viewDetails('resource', resource)}
                             >
                               <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => handleEdit('resource', resource)}
+                            >
+                              <Pencil className="h-4 w-4" />
                             </Button>
                             <Button 
                               size="icon" 
@@ -458,6 +519,90 @@ export function ContentManagement() {
               <Button variant="secondary">Fechar</Button>
             </DialogClose>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Create Post Dialog */}
+      <Dialog open={createFormOpen === 'post'} onOpenChange={(open) => !open && setCreateFormOpen(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Nova Postagem</DialogTitle>
+            <DialogDescription>
+              Criar uma nova postagem para o site.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <PostForm onSuccess={handleFormSuccess} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Create Event Dialog */}
+      <Dialog open={createFormOpen === 'event'} onOpenChange={(open) => !open && setCreateFormOpen(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Novo Evento</DialogTitle>
+            <DialogDescription>
+              Adicionar um novo evento ao calendário.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <EventForm onSuccess={handleFormSuccess} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Create Resource Dialog */}
+      <Dialog open={createFormOpen === 'resource'} onOpenChange={(open) => !open && setCreateFormOpen(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Novo Recurso</DialogTitle>
+            <DialogDescription>
+              Fazer upload de um novo arquivo ou recurso.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ResourceForm onSuccess={handleFormSuccess} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Post Dialog */}
+      <Dialog open={editItem?.type === 'post'} onOpenChange={(open) => !open && setEditItem(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Postagem</DialogTitle>
+            <DialogDescription>
+              Modificar uma postagem existente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editItem && <PostForm post={editItem.data} onSuccess={handleFormSuccess} />}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Event Dialog */}
+      <Dialog open={editItem?.type === 'event'} onOpenChange={(open) => !open && setEditItem(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+            <DialogDescription>
+              Modificar um evento existente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editItem && <EventForm event={editItem.data} onSuccess={handleFormSuccess} />}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Resource Dialog */}
+      <Dialog open={editItem?.type === 'resource'} onOpenChange={(open) => !open && setEditItem(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Recurso</DialogTitle>
+            <DialogDescription>
+              Modificar um recurso existente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editItem && <ResourceForm resource={editItem.data} onSuccess={handleFormSuccess} />}
         </DialogContent>
       </Dialog>
     </>
