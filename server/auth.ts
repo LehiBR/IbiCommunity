@@ -169,8 +169,16 @@ export function setupAuth(app: Express): void {
 
   app.post("/api/register", async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log("Register request body:", req.body);
+      
       // Validate request
-      const { username, email, name, password } = registerSchema.parse(req.body);
+      const validatedData = registerSchema.safeParse(req.body);
+      
+      if (!validatedData.success) {
+        return res.status(400).json({ errors: validatedData.error.errors });
+      }
+      
+      const { username, email, name, password } = validatedData.data;
       
       // Check if username already exists
       const existingUsername = await storage.getUserByUsername(username);
@@ -193,6 +201,9 @@ export function setupAuth(app: Express): void {
         email,
         name,
         password: hashedPassword,
+        role: "member", // Set default role
+        avatar: null,
+        createdAt: new Date(),
       });
       
       // Remove password from response
