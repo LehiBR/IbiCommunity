@@ -19,7 +19,6 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
   return res;
 }
 

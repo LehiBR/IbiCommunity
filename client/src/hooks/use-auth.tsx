@@ -52,17 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
   } = useQuery<Omit<User, "password"> | null, Error>({
     queryKey: ["/api/user"],
-    queryFn: async ({ queryKey }) => {
+    queryFn: async () => {
       try {
-        const res = await fetch(queryKey[0] as string, {
+        const res = await fetch("/api/user", {
           credentials: "include",
         });
         
         if (res.status === 401) {
           return null;
         }
-        
-        await getQueryFn({ on401: "returnNull" })({ queryKey });
         return await res.json();
       } catch (error) {
         return null;
@@ -74,8 +72,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      try {
+        const res = await apiRequest("POST", "/api/login", credentials);
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || errorData.errors?.[0]?.message || "Credenciais inválidas");
+        }
+        
+        return await res.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Erro ao fazer login");
+      }
     },
     onSuccess: (userData: Omit<User, "password">) => {
       queryClient.setQueryData(["/api/user"], userData);
@@ -96,9 +107,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const { confirmPassword, ...registerData } = data;
-      const res = await apiRequest("POST", "/api/register", registerData);
-      return await res.json();
+      try {
+        const { confirmPassword, ...registerData } = data;
+        const res = await apiRequest("POST", "/api/register", registerData);
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || errorData.errors?.[0]?.message || "Erro ao cadastrar");
+        }
+        
+        return await res.json();
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Erro ao cadastrar");
+      }
     },
     onSuccess: (userData: Omit<User, "password">) => {
       queryClient.setQueryData(["/api/user"], userData);
